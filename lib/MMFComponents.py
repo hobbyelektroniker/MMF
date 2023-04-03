@@ -15,8 +15,8 @@ from machine import Pin
 
 
 class DigitalIn(Task):
-    def __init__(self, num, pullup=True, reverse=True, time=100, **kwargs):
-        super().__init__(time=time, **kwargs)
+    def __init__(self, num, pullup=True, reverse=True, interval=100, **kwargs):
+        super().__init__(interval=interval, **kwargs)
         if num:
             if pullup:
                 self.port = Pin(num, Pin.IN, Pin.PULL_UP)
@@ -41,8 +41,8 @@ class DigitalIn(Task):
 
 
 class Button(DigitalIn):
-    def __init__(self, num, pullup=True, reverse=True, time=100, **kwargs):
-        super().__init__(num, pullup, reverse, time, **kwargs)
+    def __init__(self, num, pullup=True, reverse=True, interval=100, **kwargs):
+        super().__init__(num, pullup, reverse, interval, **kwargs)
         self._press_time = 0
 
     def step(self):
@@ -58,8 +58,8 @@ class Button(DigitalIn):
 
 
 class DigitalOut(Task):
-    def __init__(self, num, high=False, time=100, **kwargs):
-        super().__init__(time=time, **kwargs)
+    def __init__(self, num, high=False, interval=100, **kwargs):
+        super().__init__(interval=interval, **kwargs)
         if num is not None:
             self.port = Pin(num, Pin.OUT)
         self._num = num
@@ -72,7 +72,7 @@ class DigitalOut(Task):
     def set_blink(self, blink):
         self._blink = blink
         if blink:
-            self.time = 500 // blink
+            self.interval = 500 // blink
         self.active = blink != 0
 
     def set_pulse(self, pulse):

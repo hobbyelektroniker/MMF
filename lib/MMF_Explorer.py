@@ -31,17 +31,17 @@ class Display(PicoGraphics):
     def print(self, text, x, y, scale):
         self.text(text, x, y, scale=scale)
 
-def ButtonA(pullup=True, time=100):
-    return Button(12, pullup=pullup, time=time)
+def ButtonA(pullup=True, interval=100):
+    return Button(12, pullup=pullup, interval=interval)
 
 
-def ButtonB(pullup=True, time=100):
-    return Button(13, pullup=pullup, time=time)
+def ButtonB(pullup=True, interval=100):
+    return Button(13, pullup=pullup, interval=interval)
 
 
-def ButtonX(pullup=True, time=100):
-    return Button(14, pullup=pullup, time=time)
+def ButtonX(pullup=True, interval=100):
+    return Button(14, pullup=pullup, interval=interval)
 
 
-def ButtonY(pullup=True, time=100):
-    return Button(15, pullup=pullup, time=time)
+def ButtonY(pullup=True, interval=100):
+    return Button(15, pullup=pullup, interval=interval)

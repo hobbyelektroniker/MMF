@@ -1,32 +1,33 @@
 """
-Micropython Multitasking Framework MMF
-Demo: Zeitverzögerte Funktionen
+Micropython Multitasking Framework (MMF)
+Demo: Verzögerte Funktionen
 
 https://github.com/hobbyelektroniker/MMF
 https://community.hobbyelektroniker.ch
 https://www.youtube.com/c/HobbyelektronikerCh
 
-Der Hobbyelektroniker, 24.03.2023
+Der Hobbyelektroniker, 03.04.2023
 MIT License gemäss Angaben auf Github
 """
+
 
 # Importe
 from MMF_Explorer import *
 
-# App erzeugen
+# Applikation erzeugen
 app = Application()
+display = Display()
 
-# MMF - Komponenten erzeugen
+# MMF - Komponenten erzeugen, hinzufügen und konfigurieren
 rot = DigitalOut(0)
 gruen = DigitalOut(2)
 button_a = ButtonA()
 button_b = ButtonB()
 
-# MMF - Komponenten der App hinzufügen
 app.add_components(rot, gruen, button_a, button_b)
 
-# Fremdkomponenten erstellen
-display = Display()
+rot.blink = 1
+gruen.blink = 2
 
 # Funktionen
 def print_text(txt, x, y, scale):
@@ -35,17 +36,17 @@ def print_text(txt, x, y, scale):
     display.update()
 
 def aus():
-    display.clear_all()
-    display.update()
     rot.high = False
     gruen.high = False
-    app.stop()
-    
-def byby():
-    print_text("Bye", 40, 80, 10)
-    app.after(2000, print_text, "Bis bald", 10, 80, 6)
-    app.after(5000, aus)
-    
+    display.clear_all()
+    display.update()
+    app.stop()    
+
+def byebye():
+    print_text("Bye", 40, 80, scale=10)
+    app.after(5000, aus) 
+
+# Nachrichtenempfänger
 def on_message(sender, topic, data):
     if sender == button_a:
         if topic == 'pressed':
@@ -54,11 +55,7 @@ def on_message(sender, topic, data):
             gruen.blink = 2
     if sender == button_b:
         if topic == 'pressed':
-            byby()
-
-# MMF - Komponenten vorbereiten
-rot.blink = 1
-gruen.blink = 2
+            byebye()
 
 # App starten
 app.run(message=on_message)

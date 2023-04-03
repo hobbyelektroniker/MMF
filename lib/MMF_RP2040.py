@@ -31,9 +31,9 @@ class PWMOut(DigitalOut):
     Zugriff auf native Port: .port
     freq: 7 Hz - 125 MHz
     """
-    def __init__(self, num, high=False, time=100, percent=50, freq=500, **kwargs):
+    def __init__(self, num, high=False, interval=100, percent=50, freq=500, **kwargs):
         self.port = PWM(Pin(num))
-        super().__init__(0, high=high, time=time, **kwargs)
+        super().__init__(0, high=high, interval=interval, **kwargs)
         self._num = num
         self.freq = freq
         self.percent = percent
@@ -72,8 +72,8 @@ class PWMOut(DigitalOut):
         self.port.freq(value)
 
 class AnalogIn(Task):
-    def __init__(self, num, time=100, **kwargs):
-        super().__init__(time=time, **kwargs)
+    def __init__(self, num, interval=100, **kwargs):
+        super().__init__(interval=interval, **kwargs)
         self._num = num
         self.port = ADC(Pin(26 + num))
 

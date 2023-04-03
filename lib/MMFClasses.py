@@ -43,18 +43,23 @@ class _Application:
         with open("settings.txt", 'w') as f:
             f.write(str(self.settings))
 
-    def run(self, start=None, loop=None, message=None, channel=0):
+    def step(self):
+        if self._loop:
+            self._loop()
+        for task in self._tasks:
+            task.execute()
+        self._tasks = [item for item in self._tasks if not item._done]
+        return not self._done 
+        
+    def run(self, start=None, loop=None, message=None, autoloop=True):
         self._done = False
-        self._channel = channel
         self._message = message
+        self._loop = loop
         if start:
             start()
-        while not self._done:
-            if loop:
-                loop()
-            for task in self._tasks:
-                task.execute()
-            self._tasks = [item for item in self._tasks if not item._done]
+        if autoloop:
+            while not self._done:
+                self.step()
 
     def stop(self):
         self._done = True
@@ -66,8 +71,8 @@ class _Application:
     def clear(self):
         self._tasks.clear()
 
-    def add_function(self, time, func, *args, **kwargs):
-        task = FunctionTask(time, func, *args, **kwargs)
+    def add_function(self, interval, func, *args, **kwargs):
+        task = FunctionTask(interval, func, *args, **kwargs)
         self._tasks.append(task)
         task.activate(self)
         return task
@@ -93,8 +98,8 @@ class _Application:
 
 
 class Task:
-    def __init__(self, time, immediately=False):
-        self._time = time
+    def __init__(self, interval, immediately=False):
+        self._interval = interval
         self.active = False
         self._immediately = immediately
         self._last_run = 0
@@ -105,8 +110,8 @@ class Task:
         
     def activate(self, app):
         self.app = app
-        self._last_run = 0 if self._immediately else app.millis()
-        self._next_run = self._last_run + self._time
+        self._last_run = app.millis()
+        self._next_run = self._last_run if self._immediately else self._last_run + self._interval
         self.active = True
 
     def step(self):
@@ -122,22 +127,22 @@ class Task:
         if time_stamp < self._next_run:
             return
         self._last_run = time_stamp
-        self._next_run = self._last_run + self._time
+        self._next_run = self._last_run + self._interval
         self.step()
 
     @property
-    def time(self):
-        return self._time
+    def interval(self):
+        return self._interval
 
-    @time.setter
-    def time(self, value):
-        self._time = value
-        self._next_run = self._last_run + self._time
+    @interval.setter
+    def interval(self, value):
+        self._interval = value
+        self._next_run = self._last_run + self._interval
 
 
 class FunctionTask(Task):
-    def __init__(self, time, func, *args, **kwargs):
-        super().__init__(time)
+    def __init__(self, interval, func, *args, **kwargs):
+        super().__init__(interval)
         self.func = func
         self.args = args
         self.kwargs = kwargs
