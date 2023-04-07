@@ -6,7 +6,7 @@ https://github.com/hobbyelektroniker/MMF
 https://community.hobbyelektroniker.ch
 https://www.youtube.com/c/HobbyelektronikerCh
 
-Der Hobbyelektroniker, 24.03.2023
+Der Hobbyelektroniker, 04.04.2023
 MIT License gemäss Angaben auf Github
 """
 
@@ -14,6 +14,7 @@ from MMFClasses import *
 from MMFComponents import *
 from MMF_RP2040 import *
 from picographics import PicoGraphics, DISPLAY_PICO_EXPLORER
+from pimoroni import Buzzer
 
 class Display(PicoGraphics):
     def __init__(self):

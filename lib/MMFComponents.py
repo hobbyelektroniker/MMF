@@ -6,7 +6,7 @@ https://github.com/hobbyelektroniker/MMF
 https://community.hobbyelektroniker.ch
 https://www.youtube.com/c/HobbyelektronikerCh
 
-Der Hobbyelektroniker, 24.03.2023
+Der Hobbyelektroniker, 04.04.2023
 MIT License gemäss Angaben auf Github
 """
 
@@ -15,7 +15,7 @@ from machine import Pin
 
 
 class DigitalIn(Task):
-    def __init__(self, num, pullup=True, reverse=True, interval=100, **kwargs):
+    def __init__(self, num, pullup=True, interval=100, **kwargs):
         super().__init__(interval=interval, **kwargs)
         if num:
             if pullup:
@@ -24,7 +24,6 @@ class DigitalIn(Task):
                 self.port = Pin(num, Pin.IN)
         self._num = num
         self._state = 0
-        self._reverse = reverse
 
     def step(self):
         value = self.value
@@ -34,16 +33,16 @@ class DigitalIn(Task):
 
     @property
     def value(self):
-        if self._reverse:
-            return not self.port.value()
-        else:
-            return self.port.value()
+        return self.port.value()
 
 
 class Button(DigitalIn):
-    def __init__(self, num, pullup=True, reverse=True, interval=100, **kwargs):
-        super().__init__(num, pullup, reverse, interval, **kwargs)
+    def __init__(self, num, pullup=True, reverse=None, interval=100, **kwargs):
+        super().__init__(num, pullup, interval, **kwargs)
         self._press_time = 0
+        if reverse is None:
+            reverse = pullup
+        self._reverse = reverse
 
     def step(self):
         value = self.value
@@ -56,6 +55,10 @@ class Button(DigitalIn):
             else:
                 self.app.notify(self, "released", self.app.millis() - self._press_time)
 
+    @property
+    def value(self):
+        return not bool(self.port.value()) if self._reverse else bool(self.port.value())
+
 
 class DigitalOut(Task):
     def __init__(self, num, high=False, interval=100, **kwargs):
@@ -63,26 +66,31 @@ class DigitalOut(Task):
         if num is not None:
             self.port = Pin(num, Pin.OUT)
         self._num = num
-        self._state = high
+        self._state = 0
+        self._default_interval = self.interval
+        self.set_high(high)
+        
+    def set_high(self, value):
         self._blink = 0
-        self._pulse = (0, 0)
-        self.active = False
-        self.set_state(high)
+        self._pulse = None
+        self.set_state(value)
 
     def set_blink(self, blink):
+        self._pulse = None
         self._blink = blink
-        if blink:
-            self.interval = 500 // blink
-        self.active = blink != 0
+        self.interval = 500 // blink if blink else self._default_interval
 
-    def set_pulse(self, pulse):
-        if not pulse: pulse = (0, 0)
-        self._pulse = pulse
-        periode = pulse[0] + pulse[1]
-        if periode:
-            self.set_blink(1000 / periode)
+    def set_pulse(self, value):
+        if value == (0, 0):
+            value = None
+        self._pulse = value
+        if not value:
+            self._blink = 0
+            self._interval = self._default_interval
         else:
-            self.set_blink(0)
+            self._interval = value[0] + value[1]
+            self._blink = 0
+            self.set_state(0)
 
     def set_state(self, value):
         state = 1 if value else 0
@@ -90,17 +98,21 @@ class DigitalOut(Task):
         if self._state != state:
             self._state = state
             if self.app:
-                self.app.notify(self, 'changed', self._state)
+                self.app.notify(self, 'changed', state)
 
-    def toggle(self, blink=0):
-        self.set_blink(blink)
+    def toggle(self):
+        self.set_blink(0)
         self.set_state(not self._state)
-
+        
     def step(self):
-        if self._pulse and self._pulse != (0, 0):
+        def pulse_off():
+            if self._pulse:
+                self.set_state(0)
+
+        if self._pulse and not self.high:
             self.set_state(1)
-            self.app.after(self._pulse[0], self.set_state, 0)
-        else:
+            self.app.after(self._pulse[0], pulse_off)            
+        elif self.blink:
             self.set_state(not self._state)
 
     @property
@@ -109,8 +121,7 @@ class DigitalOut(Task):
 
     @high.setter
     def high(self, value):
-        self.set_pulse((0, 0))
-        self.set_state(value)
+        self.set_high(value)
 
     @property
     def blink(self):
@@ -118,7 +129,6 @@ class DigitalOut(Task):
 
     @blink.setter
     def blink(self, value):
-        self.set_pulse((0, 0))
         self.set_blink(value)
 
     @property

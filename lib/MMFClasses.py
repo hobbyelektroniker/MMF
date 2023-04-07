@@ -6,7 +6,7 @@ https://github.com/hobbyelektroniker/MMF
 https://community.hobbyelektroniker.ch
 https://www.youtube.com/c/HobbyelektronikerCh
 
-Der Hobbyelektroniker, 24.03.2023
+Der Hobbyelektroniker, 04.04.2023
 MIT License gemäss Angaben auf Github
 """
 
@@ -26,6 +26,7 @@ class _Application:
         self._loop = None
         self._message = None
         self.settings = {}
+        self._start_time = self._millis()
         self.load_settings()
 
     @classmethod
@@ -62,6 +63,8 @@ class _Application:
                 self.step()
 
     def stop(self):
+        for task in self._tasks:
+            task.stop()
         self._done = True
 
     def notify(self, sender, topic, data):
@@ -87,9 +90,11 @@ class _Application:
         self.add_components(task)
         return task
 
+    def millis(self):
+        return self._millis() - self._start_time
 
     @classmethod
-    def millis(cls):
+    def _millis(cls):
         return 0
 
     @classmethod
