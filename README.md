@@ -21,6 +21,6 @@ Rechts oben kann unter **Code** mit **Download ZIP** das ganze Repository als ZI
 <br>
 <br>
 ## Herunterladen / anzeigen des Handbuchs
-Das Dokument **MMFDoc.pdf** enthält die Anleitung mit den Experimenten.
+Diverse pdf - Dateien enthalten Anleitung mit Beispielen.
 <br>
 
